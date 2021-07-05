@@ -54,4 +54,4 @@ app.post("/games/details", (req, res) => {
     return res.status(200).json(matchedGameDetails);
 });
 
-app.listen(8000, () => console.log('server up'));
+app.listen(9000, () => console.log('server up'));
