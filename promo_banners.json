@@ -1,0 +1,30 @@
+{
+  "promo": {
+    "utakmice": [
+      {
+        "id": "23139981",
+        "naziv": "Švicarska - Španjolska",
+        "liga": "EURO 2020",
+        "vrijeme": "pet 18:00"
+      },
+      {
+        "id": "23139982",
+        "naziv": "Belgija - Italija",
+        "liga": "EURO 2020",
+        "vrijeme": "pet 21:00"
+      },
+      {
+        "id": "23139983",
+        "naziv": "Češka - Danska",
+        "liga": "EURO 2020",
+        "vrijeme": "sub 18:00"
+      },
+      {
+        "id": "23139984",
+        "naziv": "Ukrajina - Engleska",
+        "liga": "EURO 2020",
+        "vrijeme": "sub 21:00"
+      }
+    ]
+  }
+}

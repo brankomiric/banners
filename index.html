@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banner Example</title>
+</head>
+<body>
+
+    <script>
+        function load() {
+            var matches = fetchConfig();
+            var main = document.getElementsByTagName("body")[0];
+            for(match of matches) {
+                var game = createTag("div", match.naziv);
+                var league = createTag("div", match.liga);
+                var time = createTag("div", match.vrijeme);
+                var odds = fetchOdds(match.id);
+                var oddsTag = parseOdds(odds);
+                main.appendChild(game);
+                main.appendChild(league);
+                main.appendChild(time);
+                main.appendChild(oddsTag);
+                main.append(document.createElement("br"));
+            }
+        }
+
+        function parseOdds(list) {
+            var div = document.createElement("div");
+            for(item of list) {
+                var name = createTag("span", item.naziv);
+                var odd = createTag("span", item.tecaj);
+                var span = document.createElement("span");
+                span.appendChild(name);
+                span.appendChild(document.createTextNode(" - "));
+                span.appendChild(odd);
+                div.appendChild(span);
+                div.appendChild(document.createTextNode(" | "));
+            }
+            return div;
+        }
+
+        function fetchOdds(id) {
+            var oddsUrl = "http://localhost:8000/games/details/" + id;
+            var response = makeRequest("GET", oddsUrl);
+            response = JSON.parse(response);
+            return response.ponude[0].tecajevi;
+        }
+
+        function createTag(element, content) {
+            var el = document.createElement(element);
+            el.innerHTML = content;
+            return el;
+        }
+
+        function fetchConfig() {
+            var configUrl = "https://www.supersport.hr/s3/assets/promo_banners.json";
+            var config = makeRequest("GET", configUrl);
+            config = JSON.parse(config);
+            var matches = config.promo.utakmice;
+            return matches;
+        }
+
+        function makeRequest(httpVerb, url) {
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.open(httpVerb, url, false);
+            xmlHttp.send(null);
+            return xmlHttp.responseText;
+        }
+
+        function clearBody() {
+            var body = document.getElementsByTagName("body")[0];
+            body.textContent = "";
+        }
+
+        function start() {
+            load();
+            var frequency = 1000;
+            setInterval(function() {
+                clearBody();
+                load();
+            }, frequency);
+        }
+
+        start();
+    </script>
+</body>
+</html>
