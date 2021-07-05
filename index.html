@@ -10,24 +10,26 @@
 
     <script>
         function load() {
-            var matches = fetchConfig();
-            var main = document.getElementsByTagName("body")[0];
-            var matchIds = []
-            for(match of matches) {
-                matchIds.push(match.id)
-            }
-            var odds = fetchOdds(matchIds);
-            for(match of matches) {
-                var game = createTag("div", match.naziv);
-                var league = createTag("div", match.liga);
-                var time = createTag("div", match.vrijeme);
-                var oddsTag = parseOdds(odds[match.id]);
-                main.appendChild(game);
-                main.appendChild(league);
-                main.appendChild(time);
-                main.appendChild(oddsTag);
-                main.append(document.createElement("br"));
-            }
+            fetchConfig().then(function(matches) {
+                var main = document.getElementsByTagName("body")[0];
+                var matchIds = []
+                for(match of matches) {
+                    matchIds.push(match.id)
+                }
+                fetchOdds(matchIds).then(function(odds) {
+                    for(match of matches) {
+                        var game = createTag("div", match.naziv);
+                        var league = createTag("div", match.liga);
+                        var time = createTag("div", match.vrijeme);
+                        var oddsTag = parseOdds(odds[match.id]);
+                        main.appendChild(game);
+                        main.appendChild(league);
+                        main.appendChild(time);
+                        main.appendChild(oddsTag);
+                        main.append(document.createElement("br"));
+                    }
+                });
+            });
         }
 
         function parseOdds(list) {
@@ -47,13 +49,14 @@
 
         function fetchOdds(ids) {
             var oddsUrl = "http://localhost:8000/games/details";
-            var response = makeRequest("POST", oddsUrl, {matchIds: ids});
-            response = JSON.parse(response);
-            var offers = {};
-            for(item of response) {
-                offers[item.baseId] = item.ponude[0].tecajevi;
-            }
-            return offers;
+            return makeRequest("POST", oddsUrl, {matchIds: ids}).then(function(response) {
+                response = JSON.parse(response);
+                var offers = {};
+                for(item of response) {
+                    offers[item.baseId] = item.ponude[0].tecajevi;
+                }
+                return offers;
+            });
         }
 
         function createTag(element, content) {
@@ -65,18 +68,31 @@
         function fetchConfig() {
             // var configUrl = "https://www.supersport.hr/s3/assets/promo_banners.json";
             var configUrl = "http://localhost:8000/promo_banners";
-            var config = makeRequest("GET", configUrl, null);
-            config = JSON.parse(config);
-            var matches = config.promo.utakmice;
-            return matches;
+            return makeRequest("GET", configUrl, null).then(function(config) {
+                config = JSON.parse(config);
+                return config.promo.utakmice;
+            });
         }
 
         function makeRequest(httpVerb, url, body) {
-            var xmlHttp = new XMLHttpRequest();
-            xmlHttp.open(httpVerb, url, false);
-            xmlHttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-            xmlHttp.send(JSON.stringify(body));
-            return xmlHttp.responseText;
+            return new Promise(function(resolve, reject) {
+                var xmlHttp = new XMLHttpRequest();
+                xmlHttp.open(httpVerb, url, true);
+                xmlHttp.onload = function(e) {
+                    if(xmlHttp.readyState === 4 && xmlHttp.status === 200) {
+                        resolve(xmlHttp.responseText);
+                    }
+                }
+                xmlHttp.onerror = function(e) {
+                    reject({
+                        status: this.status,
+                        statusText: xhr.statusText
+                    });
+                }
+                xmlHttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+                xmlHttp.send(JSON.stringify(body));
+            });
+            
         }
 
         function clearBody() {
@@ -86,7 +102,7 @@
 
         function start() {
             load();
-            var frequency = 1000;
+            var frequency = 30 * 1000;
             setInterval(function() {
                 clearBody();
                 load();
