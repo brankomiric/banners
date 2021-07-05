@@ -7,9 +7,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const games = [];
+const gamesDetails = [];
+let games = {};
 
-const loadJson = async () => {
+const loadGameDetails = async () => {
     try {
         const stream = fs.createReadStream("ponuda.json");
         var rl = readline.createInterface({
@@ -18,7 +19,7 @@ const loadJson = async () => {
         });
         for await (const line of rl) {
             const game = JSON.parse(line);
-            games.push(game);
+            gamesDetails.push(game);
             console.log(game);
         }
     } catch(err) {
@@ -26,16 +27,31 @@ const loadJson = async () => {
     }
 }
 
-loadJson();
+const loadGames = () => {
+    let content = fs.readFileSync("promo_banners.json");
+    content = JSON.parse(content);
+    games = content;
+}
 
-app.get("/games/details/:id", (req, res) => {
-    const id = req.params.id;
-    for(const game of games) {
-        if(game.baseId == id) {
-            return res.status(200).json(game);
+loadGameDetails();
+loadGames();
+
+app.get("/promo_banners", (req, res) => {
+    return res.status(200).json(games);
+});
+
+app.post("/games/details", (req, res) => {
+    const ids = req.body.matchIds;
+    const matchedGameDetails = [];
+    for(id of ids) {
+        for(const game of gamesDetails) {
+            if(game.baseId == id) {
+                matchedGameDetails.push(game);
+                break;
+            }
         }
     }
-    return res.status(404).json();
+    return res.status(200).json(matchedGameDetails);
 });
 
 app.listen(8000, () => console.log('server up'));

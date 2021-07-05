@@ -12,12 +12,16 @@
         function load() {
             var matches = fetchConfig();
             var main = document.getElementsByTagName("body")[0];
+            var matchIds = []
+            for(match of matches) {
+                matchIds.push(match.id)
+            }
+            var odds = fetchOdds(matchIds);
             for(match of matches) {
                 var game = createTag("div", match.naziv);
                 var league = createTag("div", match.liga);
                 var time = createTag("div", match.vrijeme);
-                var odds = fetchOdds(match.id);
-                var oddsTag = parseOdds(odds);
+                var oddsTag = parseOdds(odds[match.id]);
                 main.appendChild(game);
                 main.appendChild(league);
                 main.appendChild(time);
@@ -41,11 +45,15 @@
             return div;
         }
 
-        function fetchOdds(id) {
-            var oddsUrl = "http://localhost:8000/games/details/" + id;
-            var response = makeRequest("GET", oddsUrl);
+        function fetchOdds(ids) {
+            var oddsUrl = "http://localhost:8000/games/details";
+            var response = makeRequest("POST", oddsUrl, {matchIds: ids});
             response = JSON.parse(response);
-            return response.ponude[0].tecajevi;
+            var offers = {};
+            for(item of response) {
+                offers[item.baseId] = item.ponude[0].tecajevi;
+            }
+            return offers;
         }
 
         function createTag(element, content) {
@@ -55,17 +63,19 @@
         }
 
         function fetchConfig() {
-            var configUrl = "https://www.supersport.hr/s3/assets/promo_banners.json";
-            var config = makeRequest("GET", configUrl);
+            // var configUrl = "https://www.supersport.hr/s3/assets/promo_banners.json";
+            var configUrl = "http://localhost:8000/promo_banners";
+            var config = makeRequest("GET", configUrl, null);
             config = JSON.parse(config);
             var matches = config.promo.utakmice;
             return matches;
         }
 
-        function makeRequest(httpVerb, url) {
+        function makeRequest(httpVerb, url, body) {
             var xmlHttp = new XMLHttpRequest();
             xmlHttp.open(httpVerb, url, false);
-            xmlHttp.send(null);
+            xmlHttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+            xmlHttp.send(JSON.stringify(body));
             return xmlHttp.responseText;
         }
 
