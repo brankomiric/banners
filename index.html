@@ -9,34 +9,31 @@
 <body>
 
     <script>
+        // TODO: replace with actual url of the service
+        var url = "http://localhost:8000/games/details";
         function load() {
-            fetchConfig().then(function(matches) {
+            fetch().then(function(matches) {
                 var main = document.getElementsByTagName("body")[0];
-                var matchIds = []
                 for(match of matches) {
-                    matchIds.push(match.id)
+                    var game = createTag("div", match.Title);
+                    var league = createTag("div", match.League);
+                    var time = createTag("div", match.Time);
+                    var oddsTag = parseOdds(match.Odds);
+                    main.appendChild(game);
+                    main.appendChild(league);
+                    main.appendChild(time);
+                    main.appendChild(oddsTag);
+                    main.append(document.createElement("br"));
                 }
-                fetchOdds(matchIds).then(function(odds) {
-                    for(match of matches) {
-                        var game = createTag("div", match.naziv);
-                        var league = createTag("div", match.liga);
-                        var time = createTag("div", match.vrijeme);
-                        var oddsTag = parseOdds(odds[match.id]);
-                        main.appendChild(game);
-                        main.appendChild(league);
-                        main.appendChild(time);
-                        main.appendChild(oddsTag);
-                        main.append(document.createElement("br"));
-                    }
-                });
             });
         }
 
-        function parseOdds(list) {
+        function parseOdds(odds) {
+            console.log(odds)
             var div = document.createElement("div");
-            for(item of list) {
-                var name = createTag("span", item.naziv);
-                var odd = createTag("span", item.tecaj);
+            for(item of odds) {
+                var name = createTag("span", item.Name);
+                var odd = createTag("span", item.Odd);
                 var span = document.createElement("span");
                 span.appendChild(name);
                 span.appendChild(document.createTextNode(" - "));
@@ -47,30 +44,15 @@
             return div;
         }
 
-        function fetchOdds(ids) {
-            var oddsUrl = "http://localhost:8000/games/details";
-            return makeRequest("POST", oddsUrl, {matchIds: ids}).then(function(response) {
-                response = JSON.parse(response);
-                var offers = {};
-                for(item of response) {
-                    offers[item.baseId] = item.ponude[0].tecajevi;
-                }
-                return offers;
-            });
-        }
-
         function createTag(element, content) {
             var el = document.createElement(element);
             el.innerHTML = content;
             return el;
         }
 
-        function fetchConfig() {
-            // var configUrl = "https://www.supersport.hr/s3/assets/promo_banners.json";
-            var configUrl = "http://localhost:8000/promo_banners";
-            return makeRequest("GET", configUrl, null).then(function(config) {
-                config = JSON.parse(config);
-                return config.promo.utakmice;
+        function fetch() {
+            return makeRequest("GET", url, null).then(function(config) {
+                return JSON.parse(config);
             });
         }
 
@@ -86,7 +68,7 @@
                 xmlHttp.onerror = function(e) {
                     reject({
                         status: this.status,
-                        statusText: xhr.statusText
+                        statusText: xmlHttp.statusText
                     });
                 }
                 xmlHttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");

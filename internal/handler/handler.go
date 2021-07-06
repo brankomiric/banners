@@ -31,7 +31,8 @@ func New(repo Repo) *Handler {
 }
 
 func (h *Handler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
+	enableCors(&rw)
+	if r.Method != http.MethodGet && r.Method != http.MethodOptions {
 		rw.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
@@ -81,4 +82,11 @@ func fetchConfig() (*dto.BannerConfig, error) {
 		return nil, err
 	}
 	return config, nil
+}
+
+func enableCors(rw *http.ResponseWriter) {
+	(*rw).Header().Set("Access-Control-Allow-Origin", "*")
+	(*rw).Header().Set("Access-Control-Allow-Methods", "GET, OPTIONS")
+    (*rw).Header().Set("Access-Control-Allow-Headers", "*")
+
 }
