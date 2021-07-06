@@ -8,6 +8,7 @@ type Engine struct {
 
 type Repo interface {
 	InsertOrUpdate(match *dto.Match) error
+	FindByIdIn(ids []int) ([]dto.Match, error)
 }
 
 func New(repo Repo) *Engine {

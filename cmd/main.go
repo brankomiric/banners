@@ -29,7 +29,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	h := handler.New()
+	h := handler.New(rpo)
 	n := engine.New(rpo)
 
 	sub := nsq.Sub("ponuda.req", func(m *nsq.Message) error {

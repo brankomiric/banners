@@ -49,3 +49,17 @@ func (db *Db) InsertOrUpdate(match *dto.Match) error {
 	}
 	return nil
 }
+
+func (db *Db) FindByIdIn(ids []int) ([]dto.Match, error) {
+	var matches []dto.Match
+	err := db.Use(colName, "find_match", func(c *mongo.Collection) error {
+		ctx := context.Background()
+		filter := bson.M{idAttr: bson.M{"$in": ids}}
+		cursor, err := c.Find(ctx, filter)
+		if err != nil {
+			return err
+		}
+		return cursor.All(ctx, &matches)
+	})
+	return matches, err
+}

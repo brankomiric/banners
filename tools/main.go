@@ -12,7 +12,7 @@ import (
 func main() {
 	pub := nsq.Pub("")
 	defer pub.Close()
-	for bytes := range readFileLines("./ponuda_short.json") {
+	for bytes := range readFileLines("./ponuda_short.jsonl") {
 		line := string(bytes)
 		fmt.Println(line)
 		pub.PublishTo("ponuda.req", bytes)
