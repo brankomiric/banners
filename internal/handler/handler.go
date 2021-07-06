@@ -49,10 +49,11 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	matches, dbErr := h.rpo.FindByIdIn(matchIds)
 	handleError(rw, dbErr, "Unable to marshal response", http.StatusInternalServerError)
+	response := dto.AssembleResponseDto(config, matches)
 
 	rw.Header().Set("Content-Type", "application/json; charset=utf-8")
 	e := json.NewEncoder(rw)
-	encodingErr := e.Encode(matches)
+	encodingErr := e.Encode(response)
 	handleError(rw, encodingErr, "Unable to marshal response", http.StatusInternalServerError)
 }
 

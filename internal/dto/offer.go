@@ -1,5 +1,7 @@
 package dto
 
+import "strconv"
+
 type MatchRequest struct {
 	Source int `json:"izvor"`
 	SourceId int `json:"izvorId"`
@@ -67,4 +69,30 @@ type BannerGames struct {
 	Title string `json:"naziv"`
 	League string `json:"liga"`
 	Time string `json:"vrijeme"`
+}
+
+func AssembleResponseDto(config *BannerConfig, matches []Match) interface{} {
+	var response []interface{}
+	for _, game := range config.Promo.Games {
+		for _, match := range matches {
+			if game.Id == strconv.Itoa(match.BaseId) {
+				item := &struct{
+					Id string
+					Title string
+					League string
+					Time string
+					Odds []DisplayOdds
+				}{
+					Id: game.Id,
+					Title: game.Title,
+					League: game.League,
+					Time: game.Time,
+					Odds: match.DisplayOdds,
+				}
+				response = append(response, item)
+				break
+			}
+		}
+	}
+	return response
 }
