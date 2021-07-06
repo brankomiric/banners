@@ -53,3 +53,18 @@ type DisplayOdds struct {
 	Name string
 	Position int
 }
+
+type BannerConfig struct {
+	Promo BannerPromo `json:"promo"`
+}
+
+type BannerPromo struct {
+	Games []BannerGames `json:"utakmice"`
+}
+
+type BannerGames struct {
+	Id string `json:"id"`
+	Title string `json:"naziv"`
+	League string `json:"liga"`
+	Time string `json:"vrijeme"`
+}
